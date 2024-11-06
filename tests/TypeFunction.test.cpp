@@ -407,6 +407,70 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "keyof_single_entry_no_uniontype")
     CHECK(toString(requireTypeAlias("keyof_B")) == "\"a1\" | \"a2\"");
 }
 
+TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_runs")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type Identity = setmetatable<{}, { __index: {} }>
+	)");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_correct_metatable")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type Identity = setmetatable<{}, { __index: {} }>
+	)");
+
+    const MetatableType* mt = get<MetatableType>(requireTypeAlias("Identity"));
+    REQUIRE(mt);
+
+    CHECK_EQ(toString(mt->metatable), "{ __index: {  } }");
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_metatable")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type Identity = setmetatable<{}, { __index: {} }>
+	)");
+
+    const MetatableType* mt = get<MetatableType>(requireTypeAlias("Identity"));
+    REQUIRE(mt);
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_invalid_set")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type Identity = setmetatable<string, {}>
+	)");
+
+    LUAU_REQUIRE_ERROR_COUNT(1, result);
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_nontable_metatable")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type Identity = setmetatable<{}, string>
+	)");
+
+    LUAU_REQUIRE_ERROR_COUNT(1, result);
+}
+
 TEST_CASE_FIXTURE(BuiltinsFixture, "keyof_type_function_errors_if_it_has_nontable_part")
 {
     if (!FFlag::LuauSolverV2)

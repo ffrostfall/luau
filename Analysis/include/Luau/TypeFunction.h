@@ -63,7 +63,7 @@ struct TypeFunctionContext
     // The constraint being reduced in this run of the reduction
     const Constraint* constraint;
 
-    std::optional<AstName> userFuncName;          // Name of the user-defined type function; only available for UDTFs
+    std::optional<AstName> userFuncName; // Name of the user-defined type function; only available for UDTFs
 
     TypeFunctionContext(NotNull<ConstraintSolver> cs, NotNull<Scope> scope, NotNull<const Constraint> constraint);
 
@@ -215,6 +215,7 @@ struct BuiltinTypeFunctions
     TypeFunction rawkeyofFunc;
     TypeFunction indexFunc;
     TypeFunction rawgetFunc;
+    TypeFunction setmetatableFunc;
 
     void addToScope(NotNull<TypeArena> arena, NotNull<Scope> scope) const;
 };

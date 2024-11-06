@@ -2434,6 +2434,35 @@ bool tblIndexInto(TypeId indexer, TypeId indexee, DenseHashSet<TypeId>& result, 
     return false;
 }
 
+TypeFunctionReductionResult<TypeId> setmetatableFunctionImpl(
+    const std::vector<TypeId>& typeParams,
+    const std::vector<TypePackId>& packParams,
+    NotNull<TypeFunctionContext> ctx,
+    bool isRaw
+)
+{
+    TypeId tableTy = follow(typeParams.at(0));
+    TypeId metatableTy = follow(typeParams.at(1));
+    std::shared_ptr<const NormalizedType> normalizedTableTy = ctx->normalizer->normalize(tableTy);
+    std::shared_ptr<const NormalizedType> normalizedMetatableTy = ctx->normalizer->normalize(metatableTy);
+
+    if (!normalizedTableTy || !normalizedMetatableTy)
+        return {std::nullopt, false, {}, {}};
+
+    // The metatable must be a table type, so we don't need to check for classes
+    if (!normalizedMetatableTy->hasTables())
+        return {std::nullopt, true, {}, {}};
+
+    if (normalizedTableTy->hasTops() || normalizedTableTy->hasBooleans() || normalizedTableTy->hasErrors() || normalizedTableTy->hasNils() ||
+        normalizedTableTy->hasNumbers() || normalizedTableTy->hasStrings() || normalizedTableTy->hasThreads() || normalizedTableTy->hasBuffers() ||
+        normalizedTableTy->hasFunctions() || normalizedTableTy->hasTyvars())
+        return {std::nullopt, true, {}, {}};
+
+    TypeId tyAppliedMt = ctx->arena->addType(MetatableType{tableTy, metatableTy});
+
+    return {tyAppliedMt, true, {}, {}};
+}
+
 /* Vocabulary note: indexee refers to the type that contains the properties,
                     indexer refers to the type that is used to access indexee
    Example:         index<Person, "name"> => `Person` is the indexee and `"name"` is the indexer */
@@ -2568,6 +2597,22 @@ TypeFunctionReductionResult<TypeId> indexFunctionImpl(
     return {ctx->arena->addType(UnionType{std::vector<TypeId>(properties.begin(), properties.end())}), false, {}, {}};
 }
 
+TypeFunctionReductionResult<TypeId> setmetatableTypeFunction(
+    TypeId instance,
+    const std::vector<TypeId>& typeParams,
+    const std::vector<TypePackId>& packParams,
+    NotNull<TypeFunctionContext> ctx
+)
+{
+    if (typeParams.size() != 2 || !packParams.empty())
+    {
+        ctx->ice->ice("setmetatable type function: encountered a type function instance without the required argument structure");
+        LUAU_ASSERT(false);
+    }
+
+    return setmetatableFunctionImpl(typeParams, packParams, ctx, /* isRaw */ false);
+}
+
 TypeFunctionReductionResult<TypeId> indexTypeFunction(
     TypeId instance,
     const std::vector<TypeId>& typeParams,
@@ -2626,6 +2671,7 @@ BuiltinTypeFunctions::BuiltinTypeFunctions()
     , rawkeyofFunc{"rawkeyof", rawkeyofTypeFunction}
     , indexFunc{"index", indexTypeFunction}
     , rawgetFunc{"rawget", rawgetTypeFunction}
+    , setmetatableFunc{"setmetatable", setmetatableTypeFunction}
 {
 }
 
@@ -2672,6 +2718,8 @@ void BuiltinTypeFunctions::addToScope(NotNull<TypeArena> arena, NotNull<Scope> s
 
     scope->exportedTypeBindings[indexFunc.name] = mkBinaryTypeFunction(&indexFunc);
     scope->exportedTypeBindings[rawgetFunc.name] = mkBinaryTypeFunction(&rawgetFunc);
+
+    scope->exportedTypeBindings[setmetatableFunc.name] = mkBinaryTypeFunction(&setmetatableFunc);
 }
 
 const BuiltinTypeFunctions& builtinTypeFunctions()
