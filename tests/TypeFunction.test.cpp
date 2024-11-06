@@ -413,8 +413,8 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_runs")
         return;
 
     CheckResult result = check(R"(
-		type Identity = setmetatable<{}, { __index: {} }>
-	)");
+        type Identity = setmetatable<{}, { __index: {} }>
+    )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
 }
@@ -425,8 +425,8 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_correct_m
         return;
 
     CheckResult result = check(R"(
-		type Identity = setmetatable<{}, { __index: {} }>
-	)");
+        type Identity = setmetatable<{}, { __index: {} }>
+    )");
 
     const MetatableType* mt = get<MetatableType>(requireTypeAlias("Identity"));
     REQUIRE(mt);
@@ -440,8 +440,8 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_metatable
         return;
 
     CheckResult result = check(R"(
-		type Identity = setmetatable<{}, { __index: {} }>
-	)");
+        type Identity = setmetatable<{}, { __index: {} }>
+    )");
 
     const MetatableType* mt = get<MetatableType>(requireTypeAlias("Identity"));
     REQUIRE(mt);
@@ -453,8 +453,8 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_invalid
         return;
 
     CheckResult result = check(R"(
-		type Identity = setmetatable<string, {}>
-	)");
+        type Identity = setmetatable<string, {}>
+    )");
 
     LUAU_REQUIRE_ERROR_COUNT(1, result);
 }
@@ -465,8 +465,8 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_nontabl
         return;
 
     CheckResult result = check(R"(
-		type Identity = setmetatable<{}, string>
-	)");
+        type Identity = setmetatable<{}, string>
+    )");
 
     LUAU_REQUIRE_ERROR_COUNT(1, result);
 }
@@ -477,8 +477,8 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_runs")
         return;
 
     CheckResult result = check(R"(
-		type Identity = getmetatable<{}>
-	)");
+        type Identity = getmetatable<{}>
+    )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
 }
@@ -489,11 +489,11 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_returns_nil_if_no
         return;
 
     CheckResult result = check(R"(
-		type TableWithNoMetatable = getmetatable<{}>
-		type NumberWithNoMetatable = getmetatable<number>
-		type BooleanWithNoMetatable = getmetatable<boolean>
-		type BooleanLiteralWithNoMetatable = getmetatable<true>
-	)");
+        type TableWithNoMetatable = getmetatable<{}>
+        type NumberWithNoMetatable = getmetatable<number>
+        type BooleanWithNoMetatable = getmetatable<boolean>
+        type BooleanLiteralWithNoMetatable = getmetatable<true>
+    )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
 
@@ -514,10 +514,10 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_returns_correct_metatable")
         return;
 
     CheckResult result = check(R"(
-		local metatable = { __index = { w = 4 } }
-		local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
-		type Metatable = getmetatable<typeof(obj)>
-	)");
+        local metatable = { __index = { w = 4 } }
+        local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
+        type Metatable = getmetatable<typeof(obj)>
+    )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
 
@@ -530,10 +530,10 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_respects_metatable_metamethod")
         return;
 
     CheckResult result = check(R"(
-		local metatable = { __metatable = "Test" }
-		local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
-		type Metatable = getmetatable<typeof(obj)>
-	)");
+        local metatable = { __metatable = "Test" }
+        local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
+        type Metatable = getmetatable<typeof(obj)>
+    )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
 
@@ -1019,17 +1019,17 @@ local Active = false
 
 local function Use(Mode)
 
-	if Mode ~= nil then
+    if Mode ~= nil then
 
-		if Mode == false and Active == false then
-			return
-		else
-			Active = not Mode
-		end
+        if Mode == false and Active == false then
+            return
+        else
+            Active = not Mode
+        end
 
-		Debounce = false
-	end
-	Active = not Active
+        Debounce = false
+    end
+    Active = not Active
 
 end
     )");
