@@ -471,6 +471,75 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_nontabl
     LUAU_REQUIRE_ERROR_COUNT(1, result);
 }
 
+TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_runs")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type Identity = getmetatable<{}>
+	)");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_returns_nil_if_no_metatable")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		type TableWithNoMetatable = getmetatable<{}>
+		type NumberWithNoMetatable = getmetatable<number>
+		type BooleanWithNoMetatable = getmetatable<boolean>
+		type BooleanLiteralWithNoMetatable = getmetatable<true>
+	)");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+
+    auto tableResult = requireTypeAlias("TableWithNoMetatable");
+    auto numberResult = requireTypeAlias("NumberWithNoMetatable");
+    auto booleanResult = requireTypeAlias("BooleanWithNoMetatable");
+    auto booleanLiteralResult = requireTypeAlias("BooleanLiteralWithNoMetatable");
+
+    CHECK_EQ(toString(tableResult), "nil");
+    CHECK_EQ(toString(numberResult), "nil");
+    CHECK_EQ(toString(booleanResult), "nil");
+    CHECK_EQ(toString(booleanLiteralResult), "nil");
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_returns_correct_metatable")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		local metatable = { __index = { w = 4 } }
+		local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
+		type Metatable = getmetatable<typeof(obj)>
+	)");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+
+    CHECK_EQ(toString(requireTypeAlias("Metatable"), {true}), "{ __index: { w: number } }");
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_respects_metatable_metamethod")
+{
+    if (!FFlag::LuauSolverV2)
+        return;
+
+    CheckResult result = check(R"(
+		local metatable = { __metatable = "Test" }
+		local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
+		type Metatable = getmetatable<typeof(obj)>
+	)");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+
+    CHECK_EQ(toString(requireTypeAlias("Metatable")), "string");
+}
+
 TEST_CASE_FIXTURE(BuiltinsFixture, "keyof_type_function_errors_if_it_has_nontable_part")
 {
     if (!FFlag::LuauSolverV2)

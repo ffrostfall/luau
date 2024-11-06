@@ -2597,6 +2597,42 @@ TypeFunctionReductionResult<TypeId> indexFunctionImpl(
     return {ctx->arena->addType(UnionType{std::vector<TypeId>(properties.begin(), properties.end())}), false, {}, {}};
 }
 
+/*
+    `getmetatable` actually allows for any type to be passed in. Not just tables.
+    This is because strings use metatables to have methods operable on them.
+*/
+TypeFunctionReductionResult<TypeId> getmetatableFunctionImpl(
+    const std::vector<TypeId>& typeParams,
+    const std::vector<TypePackId>& packParams,
+    NotNull<TypeFunctionContext> ctx,
+    bool isRaw
+)
+{
+    TypeId inputTy = follow(typeParams.at(0));
+    std::shared_ptr<const NormalizedType> normalizedInputTy = ctx->normalizer->normalize(inputTy);
+
+    if (!normalizedInputTy)
+        return {std::nullopt, false, {}, {}};
+
+    auto mt = get<MetatableType>(inputTy);
+    if (mt == nullptr)
+    {
+        return {ctx->builtins->nilType, false, {}, {}};
+    }
+
+    ErrorVec dummy;
+
+    std::optional<TypeId> mmType = findMetatableEntry(ctx->builtins, dummy, inputTy, "__metatable", Location{});
+    if (!mmType)
+    {
+        return {mt->metatable, false, {}, {}};
+    }
+
+    mmType = follow(mmType);
+
+    return {mmType, false, {}, {}};
+}
+
 TypeFunctionReductionResult<TypeId> setmetatableTypeFunction(
     TypeId instance,
     const std::vector<TypeId>& typeParams,
@@ -2611,6 +2647,22 @@ TypeFunctionReductionResult<TypeId> setmetatableTypeFunction(
     }
 
     return setmetatableFunctionImpl(typeParams, packParams, ctx, /* isRaw */ false);
+}
+
+TypeFunctionReductionResult<TypeId> getmetatableTypeFunction(
+    TypeId instance,
+    const std::vector<TypeId>& typeParams,
+    const std::vector<TypePackId>& packParams,
+    NotNull<TypeFunctionContext> ctx
+)
+{
+    if (typeParams.size() != 1 || !packParams.empty())
+    {
+        ctx->ice->ice("getmetatable type function: encountered a type function instance without the required argument structure");
+        LUAU_ASSERT(false);
+    }
+
+    return getmetatableFunctionImpl(typeParams, packParams, ctx, /* isRaw */ false);
 }
 
 TypeFunctionReductionResult<TypeId> indexTypeFunction(
@@ -2672,6 +2724,7 @@ BuiltinTypeFunctions::BuiltinTypeFunctions()
     , indexFunc{"index", indexTypeFunction}
     , rawgetFunc{"rawget", rawgetTypeFunction}
     , setmetatableFunc{"setmetatable", setmetatableTypeFunction}
+    , getmetatableFunc{"getmetatable", getmetatableTypeFunction}
 {
 }
 
@@ -2720,6 +2773,7 @@ void BuiltinTypeFunctions::addToScope(NotNull<TypeArena> arena, NotNull<Scope> s
     scope->exportedTypeBindings[rawgetFunc.name] = mkBinaryTypeFunction(&rawgetFunc);
 
     scope->exportedTypeBindings[setmetatableFunc.name] = mkBinaryTypeFunction(&setmetatableFunc);
+    scope->exportedTypeBindings[getmetatableFunc.name] = mkUnaryTypeFunction(&getmetatableFunc);
 }
 
 const BuiltinTypeFunctions& builtinTypeFunctions()

@@ -215,7 +215,9 @@ struct BuiltinTypeFunctions
     TypeFunction rawkeyofFunc;
     TypeFunction indexFunc;
     TypeFunction rawgetFunc;
+
     TypeFunction setmetatableFunc;
+    TypeFunction getmetatableFunc;
 
     void addToScope(NotNull<TypeArena> arena, NotNull<Scope> scope) const;
 };
