@@ -50,6 +50,7 @@ LUAU_FASTFLAGVARIABLE(LuauUserDefinedTypeFunctions2)
 LUAU_FASTFLAG(LuauUserDefinedTypeFunctionNoEvaluation)
 LUAU_FASTFLAG(LuauUserTypeFunFixRegister)
 LUAU_FASTFLAG(LuauRemoveNotAnyHack)
+LUAU_FASTFLAGVARIABLE(LuauMetatableTypeFunctions)
 LUAU_FASTFLAGVARIABLE(LuauUserDefinedTypeFunctionResetState)
 
 LUAU_DYNAMIC_FASTINT(LuauTypeSolverRelease)
@@ -2772,8 +2773,11 @@ void BuiltinTypeFunctions::addToScope(NotNull<TypeArena> arena, NotNull<Scope> s
     scope->exportedTypeBindings[indexFunc.name] = mkBinaryTypeFunction(&indexFunc);
     scope->exportedTypeBindings[rawgetFunc.name] = mkBinaryTypeFunction(&rawgetFunc);
 
-    scope->exportedTypeBindings[setmetatableFunc.name] = mkBinaryTypeFunction(&setmetatableFunc);
-    scope->exportedTypeBindings[getmetatableFunc.name] = mkUnaryTypeFunction(&getmetatableFunc);
+    if (FFlag::LuauMetatableTypeFunctions)
+    {
+        scope->exportedTypeBindings[setmetatableFunc.name] = mkBinaryTypeFunction(&setmetatableFunc);
+        scope->exportedTypeBindings[getmetatableFunc.name] = mkUnaryTypeFunction(&getmetatableFunc);
+    }
 }
 
 const BuiltinTypeFunctions& builtinTypeFunctions()

@@ -14,6 +14,7 @@ using namespace Luau;
 
 LUAU_FASTFLAG(LuauSolverV2)
 LUAU_FASTFLAG(LuauUserDefinedTypeFunctions2)
+LUAU_FASTFLAG(LuauMetatableTypeFunctions)
 LUAU_DYNAMIC_FASTINT(LuauTypeFamilyApplicationCartesianProductLimit)
 
 struct TypeFunctionFixture : Fixture
@@ -412,6 +413,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_runs")
     if (!FFlag::LuauSolverV2)
         return;
 
+    if (!FFlag::LuauMetatableTypeFunctions)
+        return;
+
     CheckResult result = check(R"(
         type Identity = setmetatable<{}, { __index: {} }>
     )");
@@ -422,6 +426,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_runs")
 TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_correct_metatable")
 {
     if (!FFlag::LuauSolverV2)
+        return;
+
+    if (!FFlag::LuauMetatableTypeFunctions)
         return;
 
     CheckResult result = check(R"(
@@ -439,6 +446,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_metatable
     if (!FFlag::LuauSolverV2)
         return;
 
+    if (!FFlag::LuauMetatableTypeFunctions)
+        return;
+
     CheckResult result = check(R"(
         type Identity = setmetatable<{}, { __index: {} }>
     )");
@@ -450,6 +460,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_assigns_metatable
 TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_invalid_set")
 {
     if (!FFlag::LuauSolverV2)
+        return;
+
+    if (!FFlag::LuauMetatableTypeFunctions)
         return;
 
     CheckResult result = check(R"(
@@ -464,6 +477,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "setmetatable_type_function_errors_on_nontabl
     if (!FFlag::LuauSolverV2)
         return;
 
+    if (!FFlag::LuauMetatableTypeFunctions)
+        return;
+
     CheckResult result = check(R"(
         type Identity = setmetatable<{}, string>
     )");
@@ -476,6 +492,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_runs")
     if (!FFlag::LuauSolverV2)
         return;
 
+    if (!FFlag::LuauMetatableTypeFunctions)
+        return;
+
     CheckResult result = check(R"(
         type Identity = getmetatable<{}>
     )");
@@ -486,6 +505,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_runs")
 TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_type_function_returns_nil_if_no_metatable")
 {
     if (!FFlag::LuauSolverV2)
+        return;
+
+    if (!FFlag::LuauMetatableTypeFunctions)
         return;
 
     CheckResult result = check(R"(
@@ -513,6 +535,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_returns_correct_metatable")
     if (!FFlag::LuauSolverV2)
         return;
 
+    if (!FFlag::LuauMetatableTypeFunctions)
+        return;
+
     CheckResult result = check(R"(
         local metatable = { __index = { w = 4 } }
         local obj = setmetatable({x = 1, y = 2, z = 3}, metatable)
@@ -527,6 +552,9 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_returns_correct_metatable")
 TEST_CASE_FIXTURE(BuiltinsFixture, "getmetatable_respects_metatable_metamethod")
 {
     if (!FFlag::LuauSolverV2)
+        return;
+
+    if (!FFlag::LuauMetatableTypeFunctions)
         return;
 
     CheckResult result = check(R"(
